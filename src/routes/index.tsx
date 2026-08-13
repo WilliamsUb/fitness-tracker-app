@@ -1,24 +1,79 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Camera, Dumbbell, Footprints } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toaster } from "@/components/ui/sonner";
+import { StreakHeader } from "@/components/fitness/StreakHeader";
+import { WorkoutTab } from "@/components/fitness/WorkoutTab";
+import { ActivityTab } from "@/components/fitness/ActivityTab";
+import { PhotosTab } from "@/components/fitness/PhotosTab";
+import { useFitnessData } from "@/lib/fitness-store";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "PULSE — Daily Fitness & Streak Tracker" },
+      {
+        name: "description",
+        content:
+          "Track workouts, steps, running distance and progress photos in one dark, athletic dashboard with daily consistency streaks.",
+      },
+      { property: "og:title", content: "PULSE — Daily Fitness & Streak Tracker" },
+      {
+        property: "og:description",
+        content:
+          "Log sessions, hit your step and distance goals, and build your progress photo journal.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const { data, hydrated, addWorkout, bumpActivity, addPhoto, updatePhoto, removePhoto } =
+    useFitnessData();
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen pb-16">
+      <StreakHeader data={data} />
+      <main className="mx-auto max-w-5xl px-4 py-6">
+        <h1 className="sr-only">PULSE fitness tracker</h1>
+        {!hydrated ? (
+          <div className="panel h-64 animate-pulse" />
+        ) : (
+          <Tabs defaultValue="workouts">
+            <TabsList className="grid w-full grid-cols-3 rounded-xl bg-secondary/60 p-1">
+              <TabsTrigger value="workouts" className="gap-2 rounded-lg">
+                <Dumbbell className="h-4 w-4" />
+                <span className="hidden sm:inline">Workouts</span>
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="gap-2 rounded-lg">
+                <Footprints className="h-4 w-4" />
+                <span className="hidden sm:inline">Activity</span>
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="gap-2 rounded-lg">
+                <Camera className="h-4 w-4" />
+                <span className="hidden sm:inline">Photos</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="workouts" className="mt-6">
+              <WorkoutTab workouts={data.workouts} onAdd={addWorkout} />
+            </TabsContent>
+            <TabsContent value="activity" className="mt-6">
+              <ActivityTab activity={data.activity} onBump={bumpActivity} />
+            </TabsContent>
+            <TabsContent value="photos" className="mt-6">
+              <PhotosTab
+                photos={data.photos}
+                onAdd={addPhoto}
+                onUpdate={updatePhoto}
+                onRemove={removePhoto}
+              />
+            </TabsContent>
+          </Tabs>
+        )}
+      </main>
+      <Toaster />
     </div>
   );
 }
