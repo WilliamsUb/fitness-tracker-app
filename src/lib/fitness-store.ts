@@ -57,8 +57,8 @@ export function lastNDays(n: number) {
 }
 
 export function formatDay(key: string) {
-  const [y, m, d] = key.split("-").map(Number);
-  return new Date(y, (m ?? 1) - 1, d).toLocaleDateString(undefined, {
+  const [y, m, d] = key.split("-").map(Number) as [number, number, number];
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });
