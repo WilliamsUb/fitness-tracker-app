@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Camera, Dumbbell, Footprints } from "lucide-react";
+import { Bot, Camera, Dumbbell, Footprints } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { StreakHeader } from "@/components/fitness/StreakHeader";
 import { WorkoutTab } from "@/components/fitness/WorkoutTab";
 import { ActivityTab } from "@/components/fitness/ActivityTab";
 import { PhotosTab } from "@/components/fitness/PhotosTab";
+import { CoachTab } from "@/components/fitness/CoachTab";
 import { useFitnessData } from "@/lib/fitness-store";
 
 export const Route = createFileRoute("/")({
@@ -41,7 +42,7 @@ function Index() {
           <div className="panel h-64 animate-pulse" />
         ) : (
           <Tabs defaultValue="workouts">
-            <TabsList className="grid w-full grid-cols-3 rounded-xl bg-secondary/60 p-1">
+            <TabsList className="grid w-full grid-cols-4 rounded-xl bg-secondary/60 p-1">
               <TabsTrigger value="workouts" className="gap-2 rounded-lg">
                 <Dumbbell className="h-4 w-4" />
                 <span className="hidden sm:inline">Workouts</span>
@@ -53,6 +54,10 @@ function Index() {
               <TabsTrigger value="photos" className="gap-2 rounded-lg">
                 <Camera className="h-4 w-4" />
                 <span className="hidden sm:inline">Photos</span>
+              </TabsTrigger>
+              <TabsTrigger value="coach" className="gap-2 rounded-lg">
+                <Bot className="h-4 w-4" />
+                <span className="hidden sm:inline">Coach</span>
               </TabsTrigger>
             </TabsList>
 
@@ -69,6 +74,9 @@ function Index() {
                 onUpdate={updatePhoto}
                 onRemove={removePhoto}
               />
+            </TabsContent>
+            <TabsContent value="coach" className="mt-6">
+              <CoachTab data={data} />
             </TabsContent>
           </Tabs>
         )}
