@@ -166,7 +166,28 @@ export function useFitnessData() {
     });
   }, []);
 
+  const mergeActivity = useCallback(
+    (samples: { date: string; steps: number; distance: number }[]) => {
+      setData((prev) => {
+        const map = new Map(prev.activity.map((a) => [a.date, a]));
+        samples.forEach((s) => {
+          map.set(s.date, {
+            date: s.date,
+            steps: Math.max(0, Math.round(s.steps)),
+            distance: Math.max(0, Math.round(s.distance * 10) / 10),
+          });
+        });
+        return {
+          ...prev,
+          activity: [...map.values()].sort((a, b) => a.date.localeCompare(b.date)),
+        };
+      });
+    },
+    [],
+  );
+
   const addPhoto = useCallback((dataUrl: string) => {
+
     setData((prev) => ({
       ...prev,
       photos: [
