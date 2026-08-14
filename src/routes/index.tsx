@@ -27,7 +27,9 @@ export const Route = createFileRoute("/")({
         content:
           "Log sessions, hit your step and distance goals, and build your progress photo journal.",
       },
+      { property: "og:url", content: "https://ignitetracker.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://ignitetracker.lovable.app/" }],
   }),
   component: Index,
 });
