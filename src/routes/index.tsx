@@ -30,12 +30,27 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { data, hydrated, addWorkout, bumpActivity, addPhoto, updatePhoto, removePhoto } =
-    useFitnessData();
+  const {
+    data,
+    hydrated,
+    addWorkout,
+    bumpActivity,
+    mergeActivity,
+    addPhoto,
+    updatePhoto,
+    removePhoto,
+  } = useFitnessData();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="min-h-screen pb-16">
-      <StreakHeader data={data} />
+      <StreakHeader data={data} onOpenSettings={() => setSettingsOpen(true)} />
+      <DataSyncPanel
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onImport={mergeActivity}
+      />
+
       <main className="mx-auto max-w-5xl px-4 py-6">
         <h1 className="sr-only">PULSE fitness tracker</h1>
         {!hydrated ? (
