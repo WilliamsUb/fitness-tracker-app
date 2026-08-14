@@ -215,7 +215,17 @@ export function useFitnessData() {
     setData((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
   }, []);
 
-  return { data, hydrated, addWorkout, bumpActivity, addPhoto, updatePhoto, removePhoto };
+  return {
+    data,
+    hydrated,
+    addWorkout,
+    bumpActivity,
+    mergeActivity,
+    addPhoto,
+    updatePhoto,
+    removePhoto,
+  };
+
 }
 
 export function activeDays(data: FitnessData) {
