@@ -1,10 +1,18 @@
-import { Check, Flame } from "lucide-react";
+import { Check, Flame, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { activeDays, currentStreak, lastNDays, toKey, type FitnessData } from "@/lib/fitness-store";
 
-export function StreakHeader({ data }: { data: FitnessData }) {
+export function StreakHeader({
+  data,
+  onOpenSettings,
+}: {
+  data: FitnessData;
+  onOpenSettings: () => void;
+}) {
   const streak = currentStreak(data);
   const active = activeDays(data);
   const days = lastNDays(7);
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
