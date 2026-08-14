@@ -60,7 +60,17 @@ export function StreakHeader({
               </div>
             );
           })}
+          <Button
+            variant="soft"
+            size="icon-sm"
+            className="ml-1 self-center"
+            onClick={onOpenSettings}
+            aria-label="Data integrations settings"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
+
       </div>
     </header>
   );
