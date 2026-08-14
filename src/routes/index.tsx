@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { Bot, Camera, Dumbbell, Footprints } from "lucide-react";
+import { DataSyncPanel } from "@/components/fitness/DataSyncPanel";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { StreakHeader } from "@/components/fitness/StreakHeader";
