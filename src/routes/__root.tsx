@@ -77,16 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PULSE — Fitness Tracker" },
-      {
-        name: "description",
-        content: "Dark athletic fitness tracking: workouts, steps, distance and progress photos.",
-      },
-      { property: "og:title", content: "PULSE — Fitness Tracker" },
-      {
-        property: "og:description",
-        content: "Dark athletic fitness tracking: workouts, steps, distance and progress photos.",
-      },
+      { property: "og:site_name", content: "PULSE" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

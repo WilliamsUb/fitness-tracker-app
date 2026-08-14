@@ -171,7 +171,12 @@ export function PhotosTab({
                       value={p.weight}
                       onChange={(e) => onUpdate(p.id, { weight: e.target.value })}
                     />
-                    <Button variant="soft" size="icon" onClick={() => onRemove(p.id)}>
+                    <Button
+                      variant="soft"
+                      size="icon"
+                      aria-label="Delete this progress photo"
+                      onClick={() => onRemove(p.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
