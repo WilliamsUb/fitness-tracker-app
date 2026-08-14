@@ -35,6 +35,7 @@ export function StreakHeader({
         </div>
 
         <div className="flex items-end gap-1.5">
+
           {days.map((d) => {
             const key = toKey(d);
             const done = active.has(key);
