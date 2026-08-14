@@ -1,10 +1,18 @@
-import { Check, Flame } from "lucide-react";
+import { Check, Flame, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { activeDays, currentStreak, lastNDays, toKey, type FitnessData } from "@/lib/fitness-store";
 
-export function StreakHeader({ data }: { data: FitnessData }) {
+export function StreakHeader({
+  data,
+  onOpenSettings,
+}: {
+  data: FitnessData;
+  onOpenSettings: () => void;
+}) {
   const streak = currentStreak(data);
   const active = activeDays(data);
   const days = lastNDays(7);
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
@@ -27,6 +35,7 @@ export function StreakHeader({ data }: { data: FitnessData }) {
         </div>
 
         <div className="flex items-end gap-1.5">
+
           {days.map((d) => {
             const key = toKey(d);
             const done = active.has(key);
@@ -51,7 +60,17 @@ export function StreakHeader({ data }: { data: FitnessData }) {
               </div>
             );
           })}
+          <Button
+            variant="soft"
+            size="icon-sm"
+            className="ml-1 self-center"
+            onClick={onOpenSettings}
+            aria-label="Data integrations settings"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
+
       </div>
     </header>
   );
