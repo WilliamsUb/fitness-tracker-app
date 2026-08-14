@@ -123,7 +123,12 @@ export function ActivityTab({
             <Button variant="hero" className="flex-1" onClick={() => onBump(1000, 0)}>
               <Plus className="h-4 w-4" /> 1,000 steps
             </Button>
-            <Button variant="soft" size="icon" onClick={() => onBump(-1000, 0)}>
+            <Button
+              variant="soft"
+              size="icon"
+              aria-label="Remove 1,000 steps"
+              onClick={() => onBump(-1000, 0)}
+            >
               <Minus className="h-4 w-4" />
             </Button>
           </div>
@@ -131,7 +136,12 @@ export function ActivityTab({
             <Button variant="flame" className="flex-1" onClick={() => onBump(0, 0.5)}>
               <Plus className="h-4 w-4" /> 0.5 km
             </Button>
-            <Button variant="soft" size="icon" onClick={() => onBump(0, -0.5)}>
+            <Button
+              variant="soft"
+              size="icon"
+              aria-label="Remove 0.5 kilometers"
+              onClick={() => onBump(0, -0.5)}
+            >
               <Minus className="h-4 w-4" />
             </Button>
           </div>

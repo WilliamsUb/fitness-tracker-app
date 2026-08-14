@@ -27,7 +27,9 @@ export const Route = createFileRoute("/")({
         content:
           "Log sessions, hit your step and distance goals, and build your progress photo journal.",
       },
+      { property: "og:url", content: "https://ignitetracker.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://ignitetracker.lovable.app/" }],
   }),
   component: Index,
 });
@@ -61,19 +63,19 @@ function Index() {
         ) : (
           <Tabs defaultValue="workouts">
             <TabsList className="grid w-full grid-cols-4 rounded-xl bg-secondary/60 p-1">
-              <TabsTrigger value="workouts" className="gap-2 rounded-lg">
+              <TabsTrigger value="workouts" className="gap-2 rounded-lg" aria-label="Workouts">
                 <Dumbbell className="h-4 w-4" />
                 <span className="hidden sm:inline">Workouts</span>
               </TabsTrigger>
-              <TabsTrigger value="activity" className="gap-2 rounded-lg">
+              <TabsTrigger value="activity" className="gap-2 rounded-lg" aria-label="Activity">
                 <Footprints className="h-4 w-4" />
                 <span className="hidden sm:inline">Activity</span>
               </TabsTrigger>
-              <TabsTrigger value="photos" className="gap-2 rounded-lg">
+              <TabsTrigger value="photos" className="gap-2 rounded-lg" aria-label="Photos">
                 <Camera className="h-4 w-4" />
                 <span className="hidden sm:inline">Photos</span>
               </TabsTrigger>
-              <TabsTrigger value="coach" className="gap-2 rounded-lg">
+              <TabsTrigger value="coach" className="gap-2 rounded-lg" aria-label="Coach">
                 <Bot className="h-4 w-4" />
                 <span className="hidden sm:inline">Coach</span>
               </TabsTrigger>
