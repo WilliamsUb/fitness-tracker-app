@@ -2,6 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 
 export type WorkoutType = "cardio" | "strength" | "flexibility";
 
+export type ExerciseEntry = {
+  id: string;
+  name: string;
+  sets: string;
+  reps: string;
+  weight: string;
+};
+
 export type Workout = {
   id: string;
   date: string; // yyyy-mm-dd
@@ -12,6 +20,7 @@ export type Workout = {
   sets: string;
   reps: string;
   weights: string;
+  items?: ExerciseEntry[];
   createdAt: number;
 };
 
@@ -104,6 +113,38 @@ function seed(): FitnessData {
   };
 }
 
+function splitList(v: string) {
+  return (v ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+export function workoutItems(w: Workout): ExerciseEntry[] {
+  if (w.items && w.items.length) return w.items;
+  const names = splitList(w.exercises);
+  const sets = splitList(w.sets);
+  const reps = splitList(w.reps);
+  const weights = splitList(w.weights);
+  if (!names.length) return [];
+  return names.map((name, i) => ({
+    id: `${w.id}-${i}`,
+    name,
+    sets: sets[i] ?? "",
+    reps: reps[i] ?? "",
+    weight: weights[i] ?? "",
+  }));
+}
+
+export function summarizeItems(items: ExerciseEntry[]) {
+  return {
+    exercises: items.map((i) => i.name).filter(Boolean).join(", "),
+    sets: items.map((i) => i.sets || "—").join(", "),
+    reps: items.map((i) => i.reps || "—").join(", "),
+    weights: items.map((i) => i.weight || "—").join(", "),
+  };
+}
+
 function load(): FitnessData {
   if (typeof window === "undefined") return { workouts: [], activity: [], photos: [] };
   try {
@@ -142,6 +183,17 @@ export function useFitnessData() {
         { ...w, id: crypto.randomUUID(), date: todayKey(), createdAt: Date.now() },
       ],
     }));
+  }, []);
+
+  const updateWorkout = useCallback((id: string, patch: Partial<Workout>) => {
+    setData((prev) => ({
+      ...prev,
+      workouts: prev.workouts.map((w) => (w.id === id ? { ...w, ...patch } : w)),
+    }));
+  }, []);
+
+  const removeWorkout = useCallback((id: string) => {
+    setData((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
   }, []);
 
   const bumpActivity = useCallback((steps: number, distance: number) => {
@@ -219,6 +271,8 @@ export function useFitnessData() {
     data,
     hydrated,
     addWorkout,
+    updateWorkout,
+    removeWorkout,
     bumpActivity,
     mergeActivity,
     addPhoto,
