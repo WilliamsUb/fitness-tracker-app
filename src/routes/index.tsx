@@ -39,6 +39,8 @@ function Index() {
     data,
     hydrated,
     addWorkout,
+    updateWorkout,
+    removeWorkout,
     bumpActivity,
     mergeActivity,
     addPhoto,
