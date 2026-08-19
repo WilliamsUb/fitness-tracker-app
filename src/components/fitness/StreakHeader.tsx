@@ -1,17 +1,58 @@
+import { useState } from "react";
 import { Check, Flame, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { activeDays, currentStreak, lastNDays, toKey, type FitnessData } from "@/lib/fitness-store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  activeDays,
+  currentStreak,
+  formatDay,
+  lastNDays,
+  toKey,
+  type FitnessData,
+} from "@/lib/fitness-store";
 
 export function StreakHeader({
   data,
   onOpenSettings,
+  onSetDay,
 }: {
   data: FitnessData;
   onOpenSettings: () => void;
+  onSetDay: (samples: { date: string; steps: number; distance: number }[]) => void;
 }) {
   const streak = currentStreak(data);
   const active = activeDays(data);
   const days = lastNDays(7);
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ steps: "", distance: "" });
+
+  function openDay(key: string) {
+    const day = data.activity.find((a) => a.date === key);
+    setDraft({
+      steps: day ? String(day.steps) : "",
+      distance: day ? String(day.distance) : "",
+    });
+    setEditKey(key);
+  }
+
+  function saveDay(steps: number, distance: number) {
+    if (!editKey) return;
+    onSetDay([{ date: editKey, steps, distance }]);
+    setEditKey(null);
+    toast.success(steps || distance ? "Day updated" : "Day cleared");
+  }
+
+  const editingWorkouts = editKey ? data.workouts.filter((w) => w.date === editKey) : [];
 
 
   return (
@@ -53,11 +94,14 @@ export function StreakHeader({
                   <span className="text-[0.6rem] font-semibold text-muted-foreground">
                     {d.toLocaleDateString(undefined, { weekday: "narrow" })}
                   </span>
-                  <div
+                  <button
+                    type="button"
+                    aria-label={`Edit activity for ${formatDay(key)}`}
+                    onClick={() => openDay(key)}
                     className={
                       done
-                        ? "grid h-7 w-7 place-items-center rounded-lg bg-primary text-primary-foreground glow"
-                        : "grid h-7 w-7 place-items-center rounded-lg border border-border bg-secondary/60"
+                        ? "grid h-7 w-7 place-items-center rounded-lg bg-primary text-primary-foreground transition-transform glow hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        : "grid h-7 w-7 place-items-center rounded-lg border border-border bg-secondary/60 transition-colors hover:border-primary/60 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     }
                   >
                     {done ? (
@@ -65,7 +109,7 @@ export function StreakHeader({
                     ) : (
                       <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
                     )}
-                  </div>
+                  </button>
                 </div>
               );
             })}
@@ -81,6 +125,67 @@ export function StreakHeader({
           </Button>
         </div>
       </div>
+
+      <Dialog open={!!editKey} onOpenChange={(o) => !o && setEditKey(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{editKey ? formatDay(editKey) : ""}</DialogTitle>
+            <DialogDescription>
+              Edit this day's activity. Any steps or distance keeps the streak alive.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="day-steps">Steps</Label>
+              <Input
+                id="day-steps"
+                type="number"
+                min={0}
+                inputMode="numeric"
+                value={draft.steps}
+                placeholder="0"
+                onChange={(e) => setDraft({ ...draft, steps: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="day-distance">Distance (km)</Label>
+              <Input
+                id="day-distance"
+                type="number"
+                min={0}
+                step="0.1"
+                inputMode="decimal"
+                value={draft.distance}
+                placeholder="0"
+                onChange={(e) => setDraft({ ...draft, distance: e.target.value })}
+              />
+            </div>
+            {editingWorkouts.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {editingWorkouts.length}{" "}
+                {editingWorkouts.length === 1 ? "session" : "sessions"} logged this day — edit
+                those in the Workouts tab.
+              </p>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="ghost" onClick={() => saveDay(0, 0)}>
+              Clear day
+            </Button>
+            <Button
+              variant="hero"
+              onClick={() =>
+                saveDay(
+                  Math.max(0, Math.round(Number(draft.steps) || 0)),
+                  Math.max(0, Number(draft.distance) || 0),
+                )
+              }
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

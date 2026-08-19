@@ -51,7 +51,11 @@ function Index() {
 
   return (
     <div className="min-h-screen pb-16">
-      <StreakHeader data={data} onOpenSettings={() => setSettingsOpen(true)} />
+      <StreakHeader
+        data={data}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onSetDay={mergeActivity}
+      />
       <DataSyncPanel
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
