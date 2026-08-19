@@ -39,6 +39,8 @@ function Index() {
     data,
     hydrated,
     addWorkout,
+    updateWorkout,
+    removeWorkout,
     bumpActivity,
     mergeActivity,
     addPhoto,
@@ -82,7 +84,12 @@ function Index() {
             </TabsList>
 
             <TabsContent value="workouts" className="mt-6">
-              <WorkoutTab workouts={data.workouts} onAdd={addWorkout} />
+              <WorkoutTab
+                workouts={data.workouts}
+                onAdd={addWorkout}
+                onUpdate={updateWorkout}
+                onRemove={removeWorkout}
+              />
             </TabsContent>
             <TabsContent value="activity" className="mt-6">
               <ActivityTab activity={data.activity} onBump={bumpActivity} />
