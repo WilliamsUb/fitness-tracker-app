@@ -90,12 +90,31 @@ export function lastNDays(n: number) {
   return out;
 }
 
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+
+/** Locale-independent so SSR and client markup always match. */
 export function formatDay(key: string) {
   const [y, m, d] = key.split("-").map(Number) as [number, number, number];
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+  return `${MONTHS[m - 1]} ${d}`;
+}
+
+export function weekdayInitial(d: Date) {
+  return WEEKDAYS[d.getDay()];
 }
 
 function seed(): FitnessData {

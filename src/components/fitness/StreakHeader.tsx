@@ -19,6 +19,7 @@ import {
   toDisplayDistance,
   toKey,
   toStoredDistance,
+  weekdayInitial,
   unitLabel,
   type FitnessData,
 } from "@/lib/fitness-store";
@@ -98,7 +99,7 @@ export function StreakHeader({
               return (
                 <div key={key} className="flex flex-col items-center gap-1">
                   <span className="text-[0.6rem] font-semibold text-muted-foreground">
-                    {d.toLocaleDateString(undefined, { weekday: "narrow" })}
+                    {weekdayInitial(d)}
                   </span>
                   <button
                     type="button"
