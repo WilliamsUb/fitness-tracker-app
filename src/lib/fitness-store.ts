@@ -67,6 +67,7 @@ export type FitnessData = {
   workouts: Workout[];
   activity: ActivityDay[];
   photos: ProgressPhoto[];
+  unit: DistanceUnit;
 };
 
 const STORAGE_KEY = "pulse-fitness-data";
