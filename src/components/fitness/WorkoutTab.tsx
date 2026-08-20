@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 import type { ExerciseEntry, Workout, WorkoutType } from "@/lib/fitness-store";
 import { summarizeItems, todayKey, workoutItems } from "@/lib/fitness-store";
+import { undoToast } from "@/lib/undo-toast";
 
 const typeIcon = {
   cardio: HeartPulse,
@@ -83,11 +84,13 @@ export function WorkoutTab({
   onAdd,
   onUpdate,
   onRemove,
+  onUndo,
 }: {
   workouts: Workout[];
   onAdd: (w: Omit<Workout, "id" | "createdAt" | "date">) => void;
   onUpdate: (id: string, patch: Partial<Workout>) => void;
   onRemove: (id: string) => void;
+  onUndo: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -140,7 +143,7 @@ export function WorkoutTab({
     };
     if (editingId) {
       onUpdate(editingId, payload);
-      toast.success("Session updated");
+      undoToast("Session updated", onUndo);
     } else {
       onAdd(payload);
       toast.success("Session logged");
@@ -229,7 +232,7 @@ export function WorkoutTab({
                           onClick={(e) => {
                             e.stopPropagation();
                             onRemove(w.id);
-                            toast.success("Session deleted");
+                            undoToast("Session deleted", onUndo);
                           }}
                         >
                           <Trash2 className="h-4 w-4" />

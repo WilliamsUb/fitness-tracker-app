@@ -9,10 +9,18 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { formatDay, lastNDays, toKey, type ActivityDay } from "@/lib/fitness-store";
+import {
+  distanceGoal,
+  formatDay,
+  lastNDays,
+  toDisplayDistance,
+  toKey,
+  unitLabel,
+  type ActivityDay,
+  type DistanceUnit,
+} from "@/lib/fitness-store";
 
 const STEP_GOAL = 10000;
-const DIST_GOAL = 8;
 
 function Ring({
   value,
@@ -78,17 +86,26 @@ function Ring({
 
 export function ActivityTab({
   activity,
+  unit,
   onBump,
 }: {
   activity: ActivityDay[];
+  unit: DistanceUnit;
   onBump: (steps: number, distance: number) => void;
 }) {
+  const u = unitLabel(unit);
+  const distGoal = distanceGoal(unit);
+  const distStep = unit === "mi" ? 0.5 * 1.609344 : 0.5;
   const key = toKey(new Date());
   const today = activity.find((a) => a.date === key) ?? { date: key, steps: 0, distance: 0 };
   const chart = lastNDays(7).map((d) => {
     const k = toKey(d);
     const row = activity.find((a) => a.date === k);
-    return { day: formatDay(k), steps: row?.steps ?? 0, distance: row?.distance ?? 0 };
+    return {
+      day: formatDay(k),
+      steps: row?.steps ?? 0,
+      distance: toDisplayDistance(row?.distance ?? 0, unit),
+    };
   });
 
   return (
@@ -108,11 +125,11 @@ export function ActivityTab({
             icon={<Footprints className="h-5 w-5" />}
           />
           <Ring
-            value={today.distance}
-            goal={DIST_GOAL}
+            value={toDisplayDistance(today.distance, unit)}
+            goal={distGoal}
             label="Running distance"
-            unit="km"
-            display={`${today.distance.toFixed(1)} km`}
+            unit={u}
+            display={`${toDisplayDistance(today.distance, unit).toFixed(1)} ${u}`}
             color="var(--color-flame)"
             icon={<Route className="h-5 w-5" />}
           />
@@ -133,14 +150,14 @@ export function ActivityTab({
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="flame" className="flex-1" onClick={() => onBump(0, 0.5)}>
-              <Plus className="h-4 w-4" /> 0.5 km
+            <Button variant="flame" className="flex-1" onClick={() => onBump(0, distStep)}>
+              <Plus className="h-4 w-4" /> 0.5 {u}
             </Button>
             <Button
               variant="soft"
               size="icon"
-              aria-label="Remove 0.5 kilometers"
-              onClick={() => onBump(0, -0.5)}
+              aria-label={`Remove 0.5 ${u}`}
+              onClick={() => onBump(0, -distStep)}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -204,7 +221,7 @@ export function ActivityTab({
             <span className="h-2 w-2 rounded-full bg-primary" /> Steps
           </span>
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-flame" /> Distance (km)
+            <span className="h-2 w-2 rounded-full bg-flame" /> Distance ({u})
           </span>
         </div>
       </div>

@@ -43,6 +43,8 @@ function Index() {
     removeWorkout,
     bumpActivity,
     mergeActivity,
+    setUnit,
+    undo,
     addPhoto,
     updatePhoto,
     removePhoto,
@@ -55,11 +57,14 @@ function Index() {
         data={data}
         onOpenSettings={() => setSettingsOpen(true)}
         onSetDay={mergeActivity}
+        onUndo={undo}
       />
       <DataSyncPanel
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         onImport={mergeActivity}
+        unit={data.unit}
+        onUnitChange={setUnit}
       />
 
       <main className="mx-auto max-w-5xl px-4 py-6">
@@ -93,10 +98,11 @@ function Index() {
                 onAdd={addWorkout}
                 onUpdate={updateWorkout}
                 onRemove={removeWorkout}
+                onUndo={undo}
               />
             </TabsContent>
             <TabsContent value="activity" className="mt-6">
-              <ActivityTab activity={data.activity} onBump={bumpActivity} />
+              <ActivityTab activity={data.activity} unit={data.unit} onBump={bumpActivity} />
             </TabsContent>
             <TabsContent value="photos" className="mt-6">
               <PhotosTab

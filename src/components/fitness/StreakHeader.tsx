@@ -11,25 +11,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import {
   activeDays,
   currentStreak,
   formatDay,
   lastNDays,
+  toDisplayDistance,
   toKey,
+  toStoredDistance,
+  unitLabel,
   type FitnessData,
 } from "@/lib/fitness-store";
+import { undoToast } from "@/lib/undo-toast";
 
 export function StreakHeader({
   data,
   onOpenSettings,
   onSetDay,
+  onUndo,
 }: {
   data: FitnessData;
   onOpenSettings: () => void;
   onSetDay: (samples: { date: string; steps: number; distance: number }[]) => void;
+  onUndo: () => void;
 }) {
+  const unit = data.unit;
   const streak = currentStreak(data);
   const active = activeDays(data);
   const days = lastNDays(7);
@@ -40,7 +46,7 @@ export function StreakHeader({
     const day = data.activity.find((a) => a.date === key);
     setDraft({
       steps: day ? String(day.steps) : "",
-      distance: day ? String(day.distance) : "",
+      distance: day ? String(toDisplayDistance(day.distance, unit)) : "",
     });
     setEditKey(key);
   }
@@ -49,7 +55,7 @@ export function StreakHeader({
     if (!editKey) return;
     onSetDay([{ date: editKey, steps, distance }]);
     setEditKey(null);
-    toast.success(steps || distance ? "Day updated" : "Day cleared");
+    undoToast(steps || distance ? "Day updated" : "Day cleared", onUndo);
   }
 
   const editingWorkouts = editKey ? data.workouts.filter((w) => w.date === editKey) : [];
@@ -148,7 +154,7 @@ export function StreakHeader({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="day-distance">Distance (km)</Label>
+              <Label htmlFor="day-distance">Distance ({unitLabel(unit)})</Label>
               <Input
                 id="day-distance"
                 type="number"
@@ -177,7 +183,7 @@ export function StreakHeader({
               onClick={() =>
                 saveDay(
                   Math.max(0, Math.round(Number(draft.steps) || 0)),
-                  Math.max(0, Number(draft.distance) || 0),
+                  toStoredDistance(Number(draft.distance) || 0, unit),
                 )
               }
             >

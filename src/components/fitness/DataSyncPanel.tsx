@@ -17,6 +17,7 @@ import {
   type ActivitySample,
   type HealthProviderId,
 } from "@/lib/health-sync";
+import { unitLabel, type DistanceUnit } from "@/lib/fitness-store";
 
 const ICONS = {
   steps: Footprints,
@@ -28,10 +29,14 @@ export function DataSyncPanel({
   open,
   onOpenChange,
   onImport,
+  unit,
+  onUnitChange,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onImport: (samples: ActivitySample[]) => void;
+  unit: DistanceUnit;
+  onUnitChange: (u: DistanceUnit) => void;
 }) {
   const { settings, labels, syncing, connect, resync, disconnect } = useHealthSync(onImport);
   const [pending, setPending] = useState<HealthProviderId | null>(null);
@@ -78,6 +83,35 @@ export function DataSyncPanel({
               Connect a health platform to import steps, distance and active energy automatically.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="panel flex items-center justify-between gap-3 p-4">
+            <div className="min-w-0">
+              <p className="font-bold text-foreground">Distance units</p>
+              <p className="text-xs text-muted-foreground">
+                Showing distances in {unit === "mi" ? "miles" : "kilometres"}.
+              </p>
+            </div>
+            <div className="flex rounded-full bg-secondary/70 p-1">
+              {(["km", "mi"] as DistanceUnit[]).map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  aria-pressed={unit === u}
+                  onClick={() => {
+                    onUnitChange(u);
+                    toast(`Distances now in ${u === "mi" ? "miles" : "kilometres"}`);
+                  }}
+                  className={
+                    unit === u
+                      ? "rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"
+                      : "rounded-full px-3 py-1 text-xs font-bold text-muted-foreground"
+                  }
+                >
+                  {unitLabel(u)}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-3">
             {ids.map((id) => {

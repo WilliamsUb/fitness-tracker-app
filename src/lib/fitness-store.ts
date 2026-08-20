@@ -1,4 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+export type DistanceUnit = "km" | "mi";
+
+const KM_PER_MI = 1.609344;
+
+/** Convert stored kilometres into the user's display unit. */
+export function toDisplayDistance(km: number, unit: DistanceUnit) {
+  const v = unit === "mi" ? km / KM_PER_MI : km;
+  return Math.round(v * 10) / 10;
+}
+
+/** Convert a value typed in the user's unit back into stored kilometres. */
+export function toStoredDistance(value: number, unit: DistanceUnit) {
+  const km = unit === "mi" ? value * KM_PER_MI : value;
+  return Math.max(0, Math.round(km * 100) / 100);
+}
+
+export function unitLabel(unit: DistanceUnit) {
+  return unit === "mi" ? "mi" : "km";
+}
+
+export function distanceGoal(unit: DistanceUnit) {
+  return unit === "mi" ? 5 : 8;
+}
 
 export type WorkoutType = "cardio" | "strength" | "flexibility";
 
@@ -43,6 +67,7 @@ export type FitnessData = {
   workouts: Workout[];
   activity: ActivityDay[];
   photos: ProgressPhoto[];
+  unit: DistanceUnit;
 };
 
 const STORAGE_KEY = "pulse-fitness-data";
@@ -110,6 +135,7 @@ function seed(): FitnessData {
       distance: distBase[i]!,
     })),
     photos: [],
+    unit: "km",
   };
 }
 
@@ -146,7 +172,8 @@ export function summarizeItems(items: ExerciseEntry[]) {
 }
 
 function load(): FitnessData {
-  if (typeof window === "undefined") return { workouts: [], activity: [], photos: [] };
+  if (typeof window === "undefined")
+    return { workouts: [], activity: [], photos: [], unit: "km" };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
@@ -155,6 +182,7 @@ function load(): FitnessData {
       workouts: parsed.workouts ?? [],
       activity: parsed.activity ?? [],
       photos: parsed.photos ?? [],
+      unit: parsed.unit === "mi" ? "mi" : "km",
     };
   } catch {
     return seed();
@@ -162,7 +190,12 @@ function load(): FitnessData {
 }
 
 export function useFitnessData() {
-  const [data, setData] = useState<FitnessData>({ workouts: [], activity: [], photos: [] });
+  const [data, setData] = useState<FitnessData>({
+    workouts: [],
+    activity: [],
+    photos: [],
+    unit: "km",
+  });
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -175,29 +208,55 @@ export function useFitnessData() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data, hydrated]);
 
+  const history = useRef<FitnessData[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  /** Apply a change while snapshotting the previous state for undo. */
+  const mutate = useCallback((fn: (prev: FitnessData) => FitnessData) => {
+    setData((prev) => {
+      history.current = [...history.current.slice(-19), prev];
+      setCanUndo(true);
+      return fn(prev);
+    });
+  }, []);
+
+  const undo = useCallback(() => {
+    setData((prev) => {
+      const last = history.current[history.current.length - 1];
+      if (!last) return prev;
+      history.current = history.current.slice(0, -1);
+      setCanUndo(history.current.length > 0);
+      return last;
+    });
+  }, []);
+
+  const setUnit = useCallback((unit: DistanceUnit) => {
+    setData((prev) => ({ ...prev, unit }));
+  }, []);
+
   const addWorkout = useCallback((w: Omit<Workout, "id" | "createdAt" | "date">) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       workouts: [
         ...prev.workouts,
         { ...w, id: crypto.randomUUID(), date: todayKey(), createdAt: Date.now() },
       ],
     }));
-  }, []);
+  }, [mutate]);
 
   const updateWorkout = useCallback((id: string, patch: Partial<Workout>) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       workouts: prev.workouts.map((w) => (w.id === id ? { ...w, ...patch } : w)),
     }));
-  }, []);
+  }, [mutate]);
 
   const removeWorkout = useCallback((id: string) => {
-    setData((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
-  }, []);
+    mutate((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
+  }, [mutate]);
 
   const bumpActivity = useCallback((steps: number, distance: number) => {
-    setData((prev) => {
+    mutate((prev) => {
       const key = todayKey();
       const exists = prev.activity.some((a) => a.date === key);
       const activity = exists
@@ -206,7 +265,7 @@ export function useFitnessData() {
               ? {
                   ...a,
                   steps: Math.max(0, a.steps + steps),
-                  distance: Math.max(0, Math.round((a.distance + distance) * 10) / 10),
+                  distance: Math.max(0, Math.round((a.distance + distance) * 100) / 100),
                 }
               : a,
           )
@@ -216,11 +275,11 @@ export function useFitnessData() {
           ];
       return { ...prev, activity };
     });
-  }, []);
+  }, [mutate]);
 
   const mergeActivity = useCallback(
     (samples: { date: string; steps: number; distance: number }[]) => {
-      setData((prev) => {
+      mutate((prev) => {
         const map = new Map(prev.activity.map((a) => [a.date, a]));
         samples.forEach((s) => {
           map.set(s.date, {
@@ -235,12 +294,12 @@ export function useFitnessData() {
         };
       });
     },
-    [],
+    [mutate],
   );
 
   const addPhoto = useCallback((dataUrl: string) => {
 
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       photos: [
         ...prev.photos,
@@ -254,22 +313,25 @@ export function useFitnessData() {
         },
       ],
     }));
-  }, []);
+  }, [mutate]);
 
   const updatePhoto = useCallback((id: string, patch: Partial<ProgressPhoto>) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       photos: prev.photos.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     }));
-  }, []);
+  }, [mutate]);
 
   const removePhoto = useCallback((id: string) => {
-    setData((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
-  }, []);
+    mutate((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
+  }, [mutate]);
 
   return {
     data,
     hydrated,
+    canUndo,
+    undo,
+    setUnit,
     addWorkout,
     updateWorkout,
     removeWorkout,
