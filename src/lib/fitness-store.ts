@@ -242,18 +242,18 @@ export function useFitnessData() {
         { ...w, id: crypto.randomUUID(), date: todayKey(), createdAt: Date.now() },
       ],
     }));
-  }, []);
+  }, [mutate]);
 
   const updateWorkout = useCallback((id: string, patch: Partial<Workout>) => {
     mutate((prev) => ({
       ...prev,
       workouts: prev.workouts.map((w) => (w.id === id ? { ...w, ...patch } : w)),
     }));
-  }, []);
+  }, [mutate]);
 
   const removeWorkout = useCallback((id: string) => {
     mutate((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
-  }, []);
+  }, [mutate]);
 
   const bumpActivity = useCallback((steps: number, distance: number) => {
     mutate((prev) => {
@@ -275,7 +275,7 @@ export function useFitnessData() {
           ];
       return { ...prev, activity };
     });
-  }, []);
+  }, [mutate]);
 
   const mergeActivity = useCallback(
     (samples: { date: string; steps: number; distance: number }[]) => {
@@ -294,7 +294,7 @@ export function useFitnessData() {
         };
       });
     },
-    [],
+    [mutate],
   );
 
   const addPhoto = useCallback((dataUrl: string) => {
@@ -313,18 +313,18 @@ export function useFitnessData() {
         },
       ],
     }));
-  }, []);
+  }, [mutate]);
 
   const updatePhoto = useCallback((id: string, patch: Partial<ProgressPhoto>) => {
     mutate((prev) => ({
       ...prev,
       photos: prev.photos.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     }));
-  }, []);
+  }, [mutate]);
 
   const removePhoto = useCallback((id: string) => {
     mutate((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
-  }, []);
+  }, [mutate]);
 
   return {
     data,
