@@ -1,4 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+export type DistanceUnit = "km" | "mi";
+
+const KM_PER_MI = 1.609344;
+
+/** Convert stored kilometres into the user's display unit. */
+export function toDisplayDistance(km: number, unit: DistanceUnit) {
+  const v = unit === "mi" ? km / KM_PER_MI : km;
+  return Math.round(v * 10) / 10;
+}
+
+/** Convert a value typed in the user's unit back into stored kilometres. */
+export function toStoredDistance(value: number, unit: DistanceUnit) {
+  const km = unit === "mi" ? value * KM_PER_MI : value;
+  return Math.max(0, Math.round(km * 100) / 100);
+}
+
+export function unitLabel(unit: DistanceUnit) {
+  return unit === "mi" ? "mi" : "km";
+}
+
+export function distanceGoal(unit: DistanceUnit) {
+  return unit === "mi" ? 5 : 8;
+}
 
 export type WorkoutType = "cardio" | "strength" | "flexibility";
 
