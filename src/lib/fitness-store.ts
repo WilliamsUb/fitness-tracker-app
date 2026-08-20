@@ -265,7 +265,7 @@ export function useFitnessData() {
               ? {
                   ...a,
                   steps: Math.max(0, a.steps + steps),
-                  distance: Math.max(0, Math.round((a.distance + distance) * 10) / 10),
+                  distance: Math.max(0, Math.round((a.distance + distance) * 100) / 100),
                 }
               : a,
           )
