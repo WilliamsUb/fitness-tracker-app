@@ -208,8 +208,34 @@ export function useFitnessData() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data, hydrated]);
 
+  const history = useRef<FitnessData[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  /** Apply a change while snapshotting the previous state for undo. */
+  const mutate = useCallback((fn: (prev: FitnessData) => FitnessData) => {
+    setData((prev) => {
+      history.current = [...history.current.slice(-19), prev];
+      setCanUndo(true);
+      return fn(prev);
+    });
+  }, []);
+
+  const undo = useCallback(() => {
+    setData((prev) => {
+      const last = history.current[history.current.length - 1];
+      if (!last) return prev;
+      history.current = history.current.slice(0, -1);
+      setCanUndo(history.current.length > 0);
+      return last;
+    });
+  }, []);
+
+  const setUnit = useCallback((unit: DistanceUnit) => {
+    setData((prev) => ({ ...prev, unit }));
+  }, []);
+
   const addWorkout = useCallback((w: Omit<Workout, "id" | "createdAt" | "date">) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       workouts: [
         ...prev.workouts,
@@ -219,18 +245,18 @@ export function useFitnessData() {
   }, []);
 
   const updateWorkout = useCallback((id: string, patch: Partial<Workout>) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       workouts: prev.workouts.map((w) => (w.id === id ? { ...w, ...patch } : w)),
     }));
   }, []);
 
   const removeWorkout = useCallback((id: string) => {
-    setData((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
+    mutate((prev) => ({ ...prev, workouts: prev.workouts.filter((w) => w.id !== id) }));
   }, []);
 
   const bumpActivity = useCallback((steps: number, distance: number) => {
-    setData((prev) => {
+    mutate((prev) => {
       const key = todayKey();
       const exists = prev.activity.some((a) => a.date === key);
       const activity = exists
@@ -253,7 +279,7 @@ export function useFitnessData() {
 
   const mergeActivity = useCallback(
     (samples: { date: string; steps: number; distance: number }[]) => {
-      setData((prev) => {
+      mutate((prev) => {
         const map = new Map(prev.activity.map((a) => [a.date, a]));
         samples.forEach((s) => {
           map.set(s.date, {
@@ -273,7 +299,7 @@ export function useFitnessData() {
 
   const addPhoto = useCallback((dataUrl: string) => {
 
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       photos: [
         ...prev.photos,
@@ -290,19 +316,22 @@ export function useFitnessData() {
   }, []);
 
   const updatePhoto = useCallback((id: string, patch: Partial<ProgressPhoto>) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       photos: prev.photos.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     }));
   }, []);
 
   const removePhoto = useCallback((id: string) => {
-    setData((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
+    mutate((prev) => ({ ...prev, photos: prev.photos.filter((p) => p.id !== id) }));
   }, []);
 
   return {
     data,
     hydrated,
+    canUndo,
+    undo,
+    setUnit,
     addWorkout,
     updateWorkout,
     removeWorkout,
