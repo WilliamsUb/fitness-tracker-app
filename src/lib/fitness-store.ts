@@ -135,6 +135,7 @@ function seed(): FitnessData {
       distance: distBase[i]!,
     })),
     photos: [],
+    unit: "km",
   };
 }
 
@@ -171,7 +172,8 @@ export function summarizeItems(items: ExerciseEntry[]) {
 }
 
 function load(): FitnessData {
-  if (typeof window === "undefined") return { workouts: [], activity: [], photos: [] };
+  if (typeof window === "undefined")
+    return { workouts: [], activity: [], photos: [], unit: "km" };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
@@ -180,6 +182,7 @@ function load(): FitnessData {
       workouts: parsed.workouts ?? [],
       activity: parsed.activity ?? [],
       photos: parsed.photos ?? [],
+      unit: parsed.unit === "mi" ? "mi" : "km",
     };
   } catch {
     return seed();
@@ -187,7 +190,12 @@ function load(): FitnessData {
 }
 
 export function useFitnessData() {
-  const [data, setData] = useState<FitnessData>({ workouts: [], activity: [], photos: [] });
+  const [data, setData] = useState<FitnessData>({
+    workouts: [],
+    activity: [],
+    photos: [],
+    unit: "km",
+  });
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
